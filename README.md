@@ -1,2 +1,8 @@
 # Real-Time-Crypto-Analytics
-AWS End to End Data Pipeline to analyze Global Crypto Market Pulse. It involve AWS Lambda, Kinesis Firehose, AWS Glue, Athena, Step Function and S3 
+AWS End to End Data Pipeline to analyze Global Crypto Market Pulse. 
+
+The data flow is as follows:
+
+Source Data (Public API) --> AWS Lambda --> Kinesis Firehose --> S3 --> AWS Glue --> S3 --> Athena --> S3
+
+AWS Step Function is used for Orchestration 
