@@ -1,0 +1,45 @@
+{
+  "StartAt": "IngestPriceData",
+  "States": {
+    "IngestPriceData": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:964340656375:function:lambda_function",
+      "Next": "TransformWithSpark"
+    },
+    "TransformWithSpark": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "glue_spark_transform"
+      },
+      "Next": "UpdateGlueCatalog"
+    },
+    "UpdateGlueCatalog": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Parameters": {
+        "Name": "processed"
+      },
+      "Next": "WaitForCrawler"
+    },
+    "WaitForCrawler": {
+      "Type": "Wait",
+      "Seconds": 60,
+      "Next": "RefreshAthena"
+    },
+    "RefreshAthena": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+      "Parameters": {
+        "QueryString": "CREATE TABLE IF NOT EXISTS crypto_db.hourly_summary WITH (format='PARQUET', external_location='s3://crypto-analytics-lake-2026/gold/hourly_summary/') AS SELECT symbol, CAST(date_trunc('hour', from_iso8601_timestamp(timestamp)) as TIMESTAMP) as hr, AVG(price_usd) as avg_price FROM crypto_db.processed GROUP BY 1, 2",
+        "QueryExecutionContext": {
+          "Database": "crypto_db"
+        },
+        "ResultConfiguration": {
+          "OutputLocation": "s3://crypto-analytics-lake-2026/athena-results/"
+        }
+      },
+      "End": true
+    }
+  }
+}
