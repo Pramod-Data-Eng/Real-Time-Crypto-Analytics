@@ -6,3 +6,5 @@ The data flow is as follows:
 Source Data (Public API) --> AWS Lambda --> Kinesis Firehose --> S3 --> AWS Glue --> S3 --> Athena --> S3
 
 AWS Step Function is used for Orchestration 
+
+Please refer AWS_Real_Time_Streaming_Project.pdf for detailed documentation and execution results.
